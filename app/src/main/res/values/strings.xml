@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Dienstplan2GoogleKalender</string>
+    <string name="action_settings">Schichten</string>
+    <string name="action_layer_cancel">X</string>
+    <string name="action_layer_save">Speichern</string>
+    <string name="title_activity_layer">LayerActivity</string>
+</resources>
