@@ -18,7 +18,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
-            android:inputType="time" />
+            android:inputType="time"
+            android:focusableInTouchMode="false"/>
 
         <EditText
             android:id="@+id/editLayerEnd"
@@ -26,5 +27,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
-            android:inputType="time" />
+            android:inputType="time"
+            android:focusableInTouchMode="false"/>
 </LinearLayout>
