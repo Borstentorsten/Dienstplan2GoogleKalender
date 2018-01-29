@@ -34,7 +34,7 @@ public class LayerActivity extends AppCompatActivity {
 
         ListView layerGridView = findViewById(R.id.layerGridView);
         layerManager = new LayerManager(this);
-        layerListAdapter = new LayerListAdapter(this, layerManager);
+        layerListAdapter = new LayerListAdapter(this, layerManager, layerGridView);
         layerGridView.setAdapter(layerListAdapter);
     }
 
