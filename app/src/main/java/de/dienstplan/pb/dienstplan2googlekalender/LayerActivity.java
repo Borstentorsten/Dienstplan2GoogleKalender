@@ -2,6 +2,7 @@ package de.dienstplan.pb.dienstplan2googlekalender;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -50,18 +51,26 @@ public class LayerActivity extends AppCompatActivity {
             finish();
         }
         else {
-            saveLayerList();
+            try {
+                layerManager.clearLayer();
+                saveLayerList();
+            }
+            catch (Exception exc) {
+                int x = 0;
+            }
             finish();
         }
         return true;
     }
 
 
-    public void saveLayerList() {
+    public void saveLayerList() throws Exception {
         int count = layerListAdapter.getCount();
         for(int pos = 0; pos < count; pos++) {
             Layer layer = layerListAdapter.getItem(pos);
-            layerManager.addLayer(layer);
+            if(!layerManager.addLayer(layer)) {
+                throw new Exception("Layer could not be added");
+            }
         }
     }
 }

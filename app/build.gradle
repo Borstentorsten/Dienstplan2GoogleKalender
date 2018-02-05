@@ -1,10 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
+    dataBinding {
+        enabled = true
+    }
     compileSdkVersion 26
     defaultConfig {
         applicationId "de.dienstplan.pb.dienstplan2googlekalender"
-        minSdkVersion 15
+        minSdkVersion 17
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"

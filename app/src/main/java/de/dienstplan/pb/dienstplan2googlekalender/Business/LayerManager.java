@@ -22,7 +22,8 @@ import de.dienstplan.pb.dienstplan2googlekalender.Model.Layer;
 
 public class LayerManager {
 
-    static final String TimeFormatString = "HH:mm";
+    static private final String TimeFormatString = "HH:mm";
+    static public SimpleDateFormat TimeFormater = new SimpleDateFormat(TimeFormatString);
 
     SharedPreferences preferences;
     public LayerManager(Activity activity) {
@@ -80,12 +81,25 @@ public class LayerManager {
         Calendar start = layer.getStart();
         Calendar end = layer.getEnd();
         SimpleDateFormat dateFormat = new SimpleDateFormat(TimeFormatString);
-        return String.format("{0};{1}", dateFormat.format(start), dateFormat.format(end));
+        if(start != null && end != null) {
+            return String.format("%s;%s", dateFormat.format(start.getTime()), dateFormat.format(end.getTime()));
+        }
+        return null;
+    }
+
+    public boolean clearLayer() {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.clear();
+        return editor.commit();
     }
 
     public boolean addLayer(Layer layer) {
         String layerString = createPrefStringByLayer(layer);
-        preferences.edit().putString(layer.getName(), layerString);
-        return preferences.edit().commit();
+        if(layer != null) {
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString(layer.getName(), layerString);
+            return editor.commit();
+        }
+        return false;
     }
 }
