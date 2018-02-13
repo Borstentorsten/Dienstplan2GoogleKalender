@@ -4,4 +4,6 @@
     <string name="action_layer_cancel">X</string>
     <string name="action_layer_save">Speichern</string>
     <string name="title_activity_layer">LayerActivity</string>
+    <string name="action_settings_cancel">X</string>
+    <string name="action_settings_save">Speichern</string>
 </resources>
