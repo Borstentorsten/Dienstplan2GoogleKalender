@@ -32,4 +32,9 @@ public class CalendarItem {
     public void setCalendarId(long calendarId) {
         this.calendarId = calendarId;
     }
+
+    @Override
+    public String toString() {
+        return calendarName;
+    }
 }
