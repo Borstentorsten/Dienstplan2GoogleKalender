@@ -7,9 +7,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import de.dienstplan.pb.dienstplan2googlekalender.Model.CalendarItem;
@@ -71,13 +73,43 @@ public class CalendarManager {
         return retList;
     }
 
-    public void getEvents() {
+    public ArrayList<Event> getEvents(CalendarItem calendar, Calendar start, Calendar end) {
+        ArrayList<Event> result = new ArrayList<>();
         ContentResolver cr = activity.getContentResolver();
         try {
+            Uri uri = CalendarContract.Events.CONTENT_URI;
+            String[] projection = new String[]
+                    {CalendarContract.Events.DTSTART,
+                     CalendarContract.Events.DTEND, CalendarContract.Events.TITLE};
+            String selection = String.format("%s=? AND %s>=? AND %s<=?",
+                    CalendarContract.Events.CALENDAR_ID,
+                    CalendarContract.Events.DTSTART,
+                    CalendarContract.Events.DTEND);
+            String[] selArgs = new String[] {
+                    String.valueOf(calendar.getCalendarId()),
+                    String.valueOf(start.getTimeInMillis()),
+                    String.valueOf(end.getTimeInMillis())};
+            Cursor cursor = cr.query(uri, projection, selection, selArgs, null);
+            while(cursor.moveToNext()) {
+                long eventStart = cursor.getLong(0);
+                long eventEnd = cursor.getLong(1);
+                String title = cursor.getString(2);
+                Event event = new Event();
+                Calendar calStart = GregorianCalendar.getInstance();
+                calStart.setTimeInMillis(eventStart);
+                Calendar calEnd = GregorianCalendar.getInstance();
+                calEnd.setTimeInMillis(eventEnd);
+                event.setStart(calStart);
+                event.setEnd(calEnd);
+                event.setTitle(title);
+                result.add(event);
+            }
         }
-        catch (Exception exc) {
+        catch (SecurityException exc) {
             Static.showAlert(activity, exc.getMessage());
         }
+
+        return result;
     }
 
     public void setEvent(Event event) {
@@ -88,9 +120,9 @@ public class CalendarManager {
         Date layerStart = layer.getStart().getTime();
         Date layerEnd = layer.getEnd().getTime();
 
-        Calendar start = event.getDate();
+        Calendar start = event.getStart();
         start.setTime(layerStart);
-        Calendar end = event.getDate();
+        Calendar end = event.getEnd();
         if(layerEnd.compareTo(layerStart) < 0) {
             end.add(Calendar.DAY_OF_MONTH, 1);
         }

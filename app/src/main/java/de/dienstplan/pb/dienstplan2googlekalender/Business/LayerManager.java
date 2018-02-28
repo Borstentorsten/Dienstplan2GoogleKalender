@@ -10,7 +10,9 @@ import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Dictionary;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,14 @@ public class LayerManager {
     }
 
 
+    public HashMap<String, Layer> getLayerDictByName() {
+        HashMap<String, Layer> result = new HashMap<>();
+        List<Layer> layerList = getLayerList();
+        for(Layer layer : layerList) {
+            result.put(layer.getName(), layer);
+        }
+        return result;
+    }
 
     public ArrayList<Layer> getLayerList() {
         ArrayList<Layer> retList = new ArrayList<>();

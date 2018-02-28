@@ -7,8 +7,10 @@ import java.util.Calendar;
  */
 
 public class Event {
-    private Calendar date;
-    Layer layer;
+    private Calendar start;
+    private Calendar end;
+    private String title;
+    private Layer layer;
 
     public Layer getLayer() {
         return layer;
@@ -18,12 +20,27 @@ public class Event {
         this.layer = layer;
     }
 
-
-    public Calendar getDate() {
-        return date;
+    public Calendar getStart() {
+        return start;
     }
 
-    public void setDate(Calendar date) {
-        this.date = date;
+    public void setStart(Calendar date) {
+        this.start = date;
+    }
+
+    public Calendar getEnd() {
+        return end;
+    }
+
+    public void setEnd(Calendar end) {
+        this.end = end;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

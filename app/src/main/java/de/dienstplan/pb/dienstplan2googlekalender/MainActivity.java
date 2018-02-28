@@ -8,11 +8,20 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
+import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
+
+import java.util.ArrayList;
+import java.util.Calendar;
 
 import de.dienstplan.pb.dienstplan2googlekalender.Business.CalendarManager;
+import de.dienstplan.pb.dienstplan2googlekalender.Business.LayerManager;
+import de.dienstplan.pb.dienstplan2googlekalender.Business.Settings;
+import de.dienstplan.pb.dienstplan2googlekalender.Model.CalendarItem;
+import de.dienstplan.pb.dienstplan2googlekalender.Model.Event;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMonthChangedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,17 +31,35 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        MaterialCalendarView calendarView = findViewById(R.id.calendarView);
+        calendarView.setOnMonthChangedListener(this);
+
         if(Static.checkPermissions(this, 0, Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) {
             readCalendar();
         }
+    }
 
-        MaterialCalendarView calendarView = findViewById(R.id.calendarView);
-        calendarView.setDayFormatter(new LayerDayFormater());
+    @Override
+    public void onActivityReenter(int resultCode, Intent data) {
+        super.onActivityReenter(resultCode, data);
+        readCalendar();
     }
 
     void readCalendar() {
-        CalendarManager calendarManager = new CalendarManager(this);
-        calendarManager.getAvailableCalendars();
+        MaterialCalendarView calendarView = findViewById(R.id.calendarView);
+        calendarView.setOnMonthChangedListener(this);
+        CalendarManager manager = new CalendarManager(this);
+        Settings settings = new Settings(this);
+        CalendarItem calendarItem = settings.getCalendarItem();
+        if(calendarItem != null) {
+            CalendarDay start = calendarView.getCurrentDate();
+            CalendarDay end = CalendarDay.from(start.getYear(), start.getMonth(), start.getCalendar().getActualMaximum(Calendar.DAY_OF_MONTH));
+            if(start != null && end != null) {
+                ArrayList<Event> events =
+                        manager.getEvents(calendarItem, start.getCalendar(), end.getCalendar());
+                calendarView.setDayFormatter(new LayerDayFormater(events, new LayerManager(this)));
+            }
+        }
     }
 
     @Override
@@ -67,5 +94,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onMonthChanged(MaterialCalendarView widget, CalendarDay date) {
+        if(Static.checkPermissions(this, 0, Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) {
+            readCalendar();
+        }
     }
 }
