@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import de.dienstplan.pb.dienstplan2googlekalender.Model.CalendarItem;
 import de.dienstplan.pb.dienstplan2googlekalender.Model.Event;
@@ -112,26 +113,44 @@ public class CalendarManager {
         return result;
     }
 
-    public void setEvent(Event event) {
+    public void deleteAllLayerEvents(LayerManager layerManager, CalendarItem calendarItem) {
+
+        List<Layer> layerList = layerManager.getLayerList();
+        if(layerList.size() == 0) {
+            return;
+        }
+        ContentResolver cr = activity.getContentResolver();
+        String where = String.format("%s=? AND (",
+                CalendarContract.Events.CALENDAR_ID,
+                CalendarContract.Events.CALENDAR_DISPLAY_NAME);
+        String[] whereArgs = new String[layerList.size() + 1];
+        whereArgs[0] = String.valueOf(calendarItem.getCalendarId());
+        int n = 1;
+        for(Layer layer : layerList) {
+            where += String.format(" OR %s=?");
+            whereArgs[n] = layer.getName();
+        }
+        where += ")";
+        try {
+            cr.delete(CalendarContract.Events.CONTENT_URI, where, whereArgs);
+        }
+        catch (SecurityException exc) {
+            Static.showAlert(activity, exc.getMessage());
+        }
+    }
+
+    public void setEvent(Event event, CalendarItem calendarItem) {
         ContentResolver cr = activity.getContentResolver();
         ContentValues contentValues = new ContentValues();
 
-        Layer layer = event.getLayer();
-        Date layerStart = layer.getStart().getTime();
-        Date layerEnd = layer.getEnd().getTime();
-
         Calendar start = event.getStart();
-        start.setTime(layerStart);
         Calendar end = event.getEnd();
-        if(layerEnd.compareTo(layerStart) < 0) {
-            end.add(Calendar.DAY_OF_MONTH, 1);
-        }
-        end.setTime(layerEnd);
 
+        contentValues.put(CalendarContract.Events.CALENDAR_ID, calendarItem.getCalendarId());
         contentValues.put(CalendarContract.Events.DTSTART, start.getTimeInMillis());
         contentValues.put(CalendarContract.Events.DTEND, end.getTimeInMillis());
-        contentValues.put(CalendarContract.Events.TITLE, layer.getName());
-
+        contentValues.put(CalendarContract.Events.TITLE, event.getTitle());
+        contentValues.put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
         try {
             cr.insert(CalendarContract.Events.CONTENT_URI, contentValues);
         }
