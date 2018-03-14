@@ -26,17 +26,22 @@ public class LayerDayFormater implements DayFormatter {
             for(Event event : events) {
                 if(layerMap.containsKey(event.getTitle())) {
                     Integer day = event.getStart().get(Calendar.DAY_OF_MONTH);
-                    ArrayList<Event> dayEvents = eventMap.get(day);
-                    if(dayEvents == null) {
-                        dayEvents = new ArrayList<Event>();
-                        eventMap.put(day, dayEvents);
-                    }
-                    dayEvents.add(event);
+                    setLayerToDay(day, event);
                 }
             }
         }
 
     }
+
+    public void setLayerToDay(int day, Event event) {
+        ArrayList<Event> dayEvents = eventMap.get(day);
+        if(dayEvents == null) {
+            dayEvents = new ArrayList<Event>();
+            eventMap.put(day, dayEvents);
+        }
+        dayEvents.add(event);
+    }
+
     @NonNull
     @Override
     public String format(@NonNull CalendarDay day) {

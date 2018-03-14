@@ -7,11 +7,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.CalendarContract;
 
+import com.prolificinteractive.materialcalendarview.CalendarDay;
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -113,28 +116,64 @@ public class CalendarManager {
         return result;
     }
 
-    public void deleteAllLayerEvents(LayerManager layerManager, CalendarItem calendarItem) {
+    public Event setLayerToCalendar(Layer layer, CalendarDay date, List<Layer> layerList,
+                                   CalendarItem calendarItem) {
+        Event event = null;
+        deleteAllLayerEvents(layerList, calendarItem, date);
+        if(layer == null) {
 
-        List<Layer> layerList = layerManager.getLayerList();
-        if(layerList.size() == 0) {
-            return;
         }
+        else {
+            event = new Event();
+            Calendar start = GregorianCalendar.getInstance();
+            Calendar end = GregorianCalendar.getInstance();
+            start.setTime(date.getDate());
+            start.set(Calendar.HOUR_OF_DAY, layer.getStart().get(Calendar.HOUR_OF_DAY));
+            start.set(Calendar.MINUTE, layer.getStart().get(Calendar.MINUTE));
+            end.setTime(date.getDate());
+            end.set(Calendar.HOUR_OF_DAY, layer.getEnd().get(Calendar.HOUR_OF_DAY));
+            end.set(Calendar.MINUTE, layer.getEnd().get(Calendar.MINUTE));
+            event.setStart(start);
+            event.setEnd(end);
+            event.setTitle(layer.getName());
+            setEvent(event, calendarItem);
+        }
+        return event;
+    }
+    public void deleteAllLayerEvents(List<Layer> layerList, CalendarItem calendarItem, CalendarDay day) {
         ContentResolver cr = activity.getContentResolver();
-        String where = String.format("%s=? AND (",
+        String where = String.format("%s=? AND %s>=? AND %s<=? AND (",
                 CalendarContract.Events.CALENDAR_ID,
-                CalendarContract.Events.CALENDAR_DISPLAY_NAME);
-        String[] whereArgs = new String[layerList.size() + 1];
-        whereArgs[0] = String.valueOf(calendarItem.getCalendarId());
+                CalendarContract.Events.DTSTART,
+                CalendarContract.Events.DTSTART);
+        ArrayList<String> whereArgs = new ArrayList<>();
+        whereArgs.add(String.valueOf(calendarItem.getCalendarId()));
+        Calendar dtStart = (Calendar)day.getCalendar().clone();
+        dtStart.set(Calendar.HOUR_OF_DAY, 0);
+        dtStart.set(Calendar.MINUTE, 0);
+        Calendar dtEnd = (Calendar)day.getCalendar().clone();
+        dtEnd.set(Calendar.HOUR_OF_DAY, 23);
+        dtEnd.set(Calendar.MINUTE, 59);
+        whereArgs.add(String.valueOf(dtStart.getTimeInMillis()));
+        whereArgs.add(String.valueOf(dtEnd.getTimeInMillis()));
+
         int n = 1;
         for(Layer layer : layerList) {
-            where += String.format(" OR %s=?");
-            whereArgs[n] = layer.getName();
+            if(n > 1)
+                where += " OR ";
+            where += String.format("%s = ?", CalendarContract.Events.TITLE);
+            whereArgs.add(layer.getName());
+            n++;
         }
         where += ")";
         try {
-            cr.delete(CalendarContract.Events.CONTENT_URI, where, whereArgs);
+            int deleted = cr.delete(CalendarContract.Events.CONTENT_URI, where, whereArgs.toArray(new String[0]));
+            int x = 0;
         }
         catch (SecurityException exc) {
+            Static.showAlert(activity, exc.getMessage());
+        }
+        catch(Exception exc) {
             Static.showAlert(activity, exc.getMessage());
         }
     }

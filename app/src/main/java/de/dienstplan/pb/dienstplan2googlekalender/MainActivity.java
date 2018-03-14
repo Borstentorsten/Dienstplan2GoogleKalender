@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CalendarView;
 
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements OnMonthChangedLis
 
     CalendarManager calendarManager;
     CalendarItem calendarItem;
+    MaterialCalendarView calendarView;
+    LayerDayFormater dayFormater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements OnMonthChangedLis
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        MaterialCalendarView calendarView = findViewById(R.id.calendarView);
+        calendarView = findViewById(R.id.calendarView);
         calendarView.setOnMonthChangedListener(this);
         calendarView.setOnDateChangedListener(this);
         if(Static.checkPermissions(this, 0, Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) {
@@ -67,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements OnMonthChangedLis
             if(start != null && end != null) {
                 ArrayList<Event> events =
                         calendarManager.getEvents(calendarItem, start.getCalendar(), end.getCalendar());
-                calendarView.setDayFormatter(new LayerDayFormater(events, new LayerManager(this)));
+                dayFormater = new LayerDayFormater(events, new LayerManager(this));
+                calendarView.setDayFormatter(dayFormater);
             }
         }
     }
@@ -132,26 +136,17 @@ public class MainActivity extends AppCompatActivity implements OnMonthChangedLis
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                calendarManager.deleteAllLayerEvents(layerManager, calendarItem);
+                Layer layer = null;
                 if(which == 0) {
 
                 }
                 else {
-                    Layer layer = layers.get(which - 1);
-                    Event event = new Event();
-                    Calendar start = GregorianCalendar.getInstance();
-                    Calendar end = GregorianCalendar.getInstance();
-                    start.setTime(date.getDate());
-                    start.set(Calendar.HOUR_OF_DAY, layer.getStart().get(Calendar.HOUR_OF_DAY));
-                    start.set(Calendar.MINUTE, layer.getStart().get(Calendar.MINUTE));
-                    end.setTime(date.getDate());
-                    end.set(Calendar.HOUR_OF_DAY, layer.getEnd().get(Calendar.HOUR_OF_DAY));
-                    end.set(Calendar.MINUTE, layer.getEnd().get(Calendar.MINUTE));
-                    event.setStart(start);
-                    event.setEnd(end);
-                    event.setTitle(layer.getName());
-                    calendarManager.setEvent(event, calendarItem);
+                    layer = layers.get(which - 1);
                 }
+                Event event = calendarManager.setLayerToCalendar(layer, date, layers, calendarItem);
+                //dayFormater.setLayerToDay(date.getDay(), event);
+                //calendarView.
+                readCalendar();
             }
         });
 
