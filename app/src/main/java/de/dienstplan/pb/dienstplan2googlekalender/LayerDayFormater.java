@@ -18,7 +18,7 @@ import de.dienstplan.pb.dienstplan2googlekalender.Model.Layer;
  */
 
 public class LayerDayFormater implements DayFormatter {
-    HashMap<Integer, ArrayList<Event>> eventMap;
+    private HashMap<Integer, ArrayList<Event>> eventMap;
     public LayerDayFormater(ArrayList<Event> events, LayerManager layerManager) {
         eventMap = new HashMap<Integer, ArrayList<Event>>();
         HashMap<String, Layer> layerMap = layerManager.getLayerDictByName();
@@ -26,14 +26,22 @@ public class LayerDayFormater implements DayFormatter {
             for(Event event : events) {
                 if(layerMap.containsKey(event.getTitle())) {
                     Integer day = event.getStart().get(Calendar.DAY_OF_MONTH);
-                    setLayerToDay(day, event);
+                    setEventToDay(day, event);
                 }
             }
         }
 
     }
 
-    public void setLayerToDay(int day, Event event) {
+    public Event getEventFromDay(int day) {
+        ArrayList<Event> dayEvents = eventMap.get(day);
+        if(dayEvents != null && dayEvents.size() > 0) {
+            return dayEvents.get(0);
+        }
+        return null;
+    }
+
+    public void setEventToDay(int day, Event event) {
         ArrayList<Event> dayEvents = eventMap.get(day);
         if(dayEvents == null) {
             dayEvents = new ArrayList<Event>();

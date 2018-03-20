@@ -54,8 +54,8 @@ public class MainActivity extends AppCompatActivity implements OnMonthChangedLis
     }
 
     @Override
-    public void onActivityReenter(int resultCode, Intent data) {
-        super.onActivityReenter(resultCode, data);
+    protected void onResume() {
+        super.onResume();
         readCalendar();
     }
 
@@ -127,12 +127,20 @@ public class MainActivity extends AppCompatActivity implements OnMonthChangedLis
         final List<Layer> layers = layerManager.getLayerList();
         String[] items = new String[layers.size() + 1];
         items[0] = getString(R.string.layer_no_duty);
+        int itemToSelect = 0;
+        Event prevEvent = dayFormater.getEventFromDay(date.getDay());
         int n = 1;
         for(Layer layer : layers) {
-            items[n] = layer.getName();
+            String layerName = layer.getName();
+            items[n] = layerName;
+            if(prevEvent != null) {
+                if(layerName.equals(prevEvent.getTitle())) {
+                    itemToSelect = n;
+                }
+            }
             n++;
         }
-        b.setItems(items, new DialogInterface.OnClickListener() {
+        b.setSingleChoiceItems(items, itemToSelect, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
