@@ -51,14 +51,15 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         int selectCalendarPos = 0;
 
         HashSet<String> accounts = new HashSet<>();
-        String firstAccountName = null;
+        String selectedAccountName = null;
         for(CalendarItem iter : calendarItems) {
             String accountName = iter.getAccountName();
             accounts.add(accountName);
-            if(firstAccountName == null) {
-                firstAccountName = iter.getAccountName();
+            if(selectedAccountName == null) {
+                selectedAccountName = iter.getAccountName();
             }
             if(accountName.equals(settingsCalendarItem.getAccountName())) {
+                selectedAccountName = accountName;
                 selectAccountPos = accounts.size() - 1;
             }
         }
@@ -70,13 +71,19 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
         accountSpinner.setAdapter(accountAdapter);
         accountSpinner.setOnItemSelectedListener(this);
         accountSpinner.setSelection(selectAccountPos);
-        refreshCalendarListByAccountName(firstAccountName);
+        refreshCalendarListByAccountName(selectedAccountName);
 
         for(int pos = 0; pos < calendarAdapter.getCount(); pos++) {
             CalendarItem item = calendarAdapter.getItem(pos);
             if(item.getCalendarId() == settingsCalendarItem.getCalendarId()) {
-                Spinner calendarSpinner = findViewById(R.id.spinnerCalendarPicker);
-                calendarSpinner.setSelection(pos);
+                final Spinner calendarSpinner = findViewById(R.id.spinnerCalendarPicker);
+                final int selPos = pos;
+                calendarSpinner.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        calendarSpinner.setSelection(selPos, true);
+                    }
+                });
                 break;
             }
         }
@@ -106,13 +113,8 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        switch (view.getId()) {
-            case R.id.spinnerAccountPicker: {
-                String accountName = accountAdapter.getItem(position);
-                refreshCalendarListByAccountName(accountName);
-            }
-            break;
-        }
+        String accountName = accountAdapter.getItem(position);
+        refreshCalendarListByAccountName(accountName);
     }
 
     private void refreshCalendarListByAccountName(String accountName) {
@@ -126,6 +128,7 @@ public class SettingsActivity extends AppCompatActivity implements AdapterView.O
 
         Spinner calendarSpinner = findViewById(R.id.spinnerCalendarPicker);
         calendarSpinner.setAdapter(calendarAdapter);
+        calendarAdapter.notifyDataSetChanged();
     }
 
     @Override

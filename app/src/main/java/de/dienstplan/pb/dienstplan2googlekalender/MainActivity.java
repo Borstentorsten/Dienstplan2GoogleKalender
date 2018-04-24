@@ -60,16 +60,21 @@ public class MainActivity extends AppCompatActivity implements OnMonthChangedLis
     }
 
     void readCalendar() {
+        if(!Static.checkPermissions(this, 0, Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) {
+            return;
+        }
         MaterialCalendarView calendarView = findViewById(R.id.calendarView);
         calendarView.setOnMonthChangedListener(this);
         Settings settings = new Settings(this);
         calendarItem = settings.getCalendarItem();
         if(calendarItem != null) {
-            CalendarDay start = calendarView.getCurrentDate();
-            CalendarDay end = CalendarDay.from(start.getYear(), start.getMonth(), start.getCalendar().getActualMaximum(Calendar.DAY_OF_MONTH));
+            Calendar start = calendarView.getCurrentDate().getCalendar();
+            Calendar end = (Calendar)start.clone();
+            end.add(Calendar.MONTH, 1);
+            //end.add(Calendar.DAY_OF_MONTH, -1);
             if(start != null && end != null) {
                 ArrayList<Event> events =
-                        calendarManager.getEvents(calendarItem, start.getCalendar(), end.getCalendar());
+                        calendarManager.getEvents(calendarItem, start, end);
                 dayFormater = new LayerDayFormater(events, new LayerManager(this));
                 calendarView.setDayFormatter(dayFormater);
             }

@@ -95,16 +95,17 @@ public class CalendarManager {
                     String.valueOf(end.getTimeInMillis())};
             Cursor cursor = cr.query(uri, projection, selection, selArgs, null);
             while(cursor.moveToNext()) {
-                long eventStart = cursor.getLong(0);
+                long eventStart =  cursor.getLong(0);
                 long eventEnd = cursor.getLong(1);
                 String title = cursor.getString(2);
                 Event event = new Event();
-                Calendar calStart = GregorianCalendar.getInstance();
-                calStart.setTimeInMillis(eventStart);
-                Calendar calEnd = GregorianCalendar.getInstance();
-                calEnd.setTimeInMillis(eventEnd);
-                event.setStart(calStart);
-                event.setEnd(calEnd);
+                Date startDate = new Date(eventStart);
+                Date endDate = new Date(eventEnd);
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(startDate);
+                event.setStart(cal);
+                cal.setTime(endDate);
+                event.setEnd(cal);
                 event.setTitle(title);
                 result.add(event);
             }
